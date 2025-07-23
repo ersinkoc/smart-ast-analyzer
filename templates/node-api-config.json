@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Smart AST Analyzer - Node.js API Configuration",
+  "description": "Optimized configuration for Node.js API applications",
+  
+  "ai": "mock",
+  "analysis": {
+    "type": "full",
+    "maxFiles": 150,
+    "deepAnalysis": true,
+    "framework": "express",
+    
+    "complexity": {
+      "maxCyclomatic": 10,
+      "maxCognitive": 15,
+      "maxNesting": 4,
+      "checkMiddleware": true,
+      "checkRoutes": true
+    },
+    
+    "security": {
+      "scanSecrets": true,
+      "checkVulnerabilities": true,
+      "checkSQLInjection": true,
+      "checkAuthentication": true,
+      "checkCSRF": true,
+      "checkInputValidation": true
+    },
+    
+    "performance": {
+      "checkDatabaseQueries": true,
+      "detectN1Queries": true,
+      "checkMemoryUsage": true,
+      "analyzeMiddleware": true,
+      "checkAsyncPatterns": true
+    },
+    
+    "database": {
+      "analyzeModels": true,
+      "checkRelationships": true,
+      "validateQueries": true,
+      "checkIndexes": true
+    },
+    
+    "include": [
+      "src/**/*.js",
+      "lib/**/*.js",
+      "routes/**/*.js",
+      "controllers/**/*.js",
+      "middleware/**/*.js",
+      "models/**/*.js",
+      "services/**/*.js",
+      "utils/**/*.js",
+      "config/**/*.js"
+    ],
+    
+    "exclude": [
+      "node_modules/**",
+      ".git/**",
+      "dist/**",
+      "build/**",
+      "*.min.js",
+      "*.map",
+      "__tests__/**",
+      "*.test.js",
+      "*.spec.js",
+      "coverage/**",
+      "logs/**",
+      "tmp/**"
+    ]
+  },
+  
+  "output": {
+    "format": "all",
+    "directory": "./smart-ast-output",
+    "generateDocs": true,
+    "includeAPISpec": true,
+    "includePostman": true
+  },
+  
+  "reporting": {
+    "includeComplexity": true,
+    "includeSecurity": true,
+    "includePerformance": true,
+    "includeDatabase": true,
+    "includeRecommendations": true,
+    "minSeverity": "medium",
+    "groupByEndpoint": true
+  }
+}

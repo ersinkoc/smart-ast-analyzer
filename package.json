@@ -1,0 +1,82 @@
+{
+  "name": "smart-ast-analyzer",
+  "version": "1.0.0",
+  "description": "Advanced AST-based project analysis tool with deep complexity analysis, security scanning, and optional AI enhancement",
+  "main": "index.js",
+  "bin": {
+    "smart-ast": "./bin/smart-ast"
+  },
+  "author": {
+    "name": "Ersin KOÇ",
+    "email": "ersinkoc@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ersinkoc/smart-ast-analyzer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ersinkoc/smart-ast-analyzer/issues"
+  },
+  "homepage": "https://github.com/ersinkoc/smart-ast-analyzer#readme",
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "build": "echo 'No build step required'",
+    "prepare": "echo 'Package prepared'",
+    "setup": "node scripts/setup.js",
+    "check-deps": "node scripts/check-dependencies.js",
+    "demo": "bash scripts/examples/demo.sh",
+    "example:basic": "node examples/basic-usage.js",
+    "example:api": "node examples/api-analysis-example.js",
+    "example:config": "node examples/custom-config-example.js"
+  },
+  "keywords": [
+    "ast",
+    "static-analysis",
+    "code-analysis",
+    "complexity-analysis",
+    "security-scanner",
+    "performance-analyzer",
+    "dependency-graph",
+    "babel-parser",
+    "typescript-analysis",
+    "cyclomatic-complexity",
+    "cognitive-complexity",
+    "vulnerability-detection",
+    "api-mapping",
+    "component-analysis",
+    "ai-enhancement",
+    "gemini",
+    "claude",
+    "code-quality",
+    "devtools"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.23.0",
+    "@babel/traverse": "^7.23.0",
+    "@babel/types": "^7.23.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/typescript-estree": "^6.0.0",
+    "chalk": "^4.1.2",
+    "commander": "^9.0.0",
+    "dotenv": "^16.0.0",
+    "glob": "^8.1.0",
+    "js-yaml": "^4.1.0",
+    "ora": "^5.4.1",
+    "prettier": "^2.8.0",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0"
+  },
+  "license": "MIT"
+}

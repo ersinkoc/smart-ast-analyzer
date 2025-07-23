@@ -1,0 +1,42 @@
+{
+  "name": "Next.js",
+  "analysis": {
+    "includePatterns": [
+      "pages/**/*.{js,jsx,ts,tsx}",
+      "app/**/*.{js,jsx,ts,tsx}",
+      "components/**/*.{js,jsx,ts,tsx}",
+      "lib/**/*.{js,ts}",
+      "utils/**/*.{js,ts}",
+      "hooks/**/*.{js,ts}",
+      "api/**/*.{js,ts}",
+      "middleware.{js,ts}",
+      "next.config.js"
+    ],
+    "apiPatterns": [
+      "pages/api/**/*.{js,ts}",
+      "app/api/**/*.{js,ts}",
+      "app/**/route.{js,ts}"
+    ],
+    "componentPatterns": [
+      "pages/**/*.{jsx,tsx}",
+      "app/**/*.{jsx,tsx}",
+      "components/**/*.{jsx,tsx}"
+    ]
+  },
+  "specialFiles": [
+    "_app.{js,jsx,ts,tsx}",
+    "_document.{js,jsx,ts,tsx}",
+    "layout.{js,jsx,ts,tsx}",
+    "page.{js,jsx,ts,tsx}",
+    "loading.{js,jsx,ts,tsx}",
+    "error.{js,jsx,ts,tsx}",
+    "not-found.{js,jsx,ts,tsx}",
+    "middleware.{js,ts}",
+    "next.config.js"
+  ],
+  "routingPatterns": {
+    "pages": "File-based routing in /pages directory",
+    "app": "App Router with /app directory",
+    "api": "API routes in /pages/api or /app/api"
+  }
+}

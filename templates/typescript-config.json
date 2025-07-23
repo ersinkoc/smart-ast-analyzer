@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Smart AST Analyzer - TypeScript Configuration",
+  "description": "Optimized configuration for TypeScript projects",
+  
+  "ai": "mock",
+  "analysis": {
+    "type": "full",
+    "maxFiles": 300,
+    "deepAnalysis": true,
+    "framework": "typescript",
+    
+    "complexity": {
+      "maxCyclomatic": 10,
+      "maxCognitive": 15,
+      "maxNesting": 4,
+      "checkTypes": true,
+      "checkGenerics": true,
+      "checkInterfaces": true
+    },
+    
+    "security": {
+      "scanSecrets": true,
+      "checkVulnerabilities": true,
+      "checkTypeAssertions": true,
+      "validateInputs": true,
+      "checkAnyUsage": true
+    },
+    
+    "performance": {
+      "checkCompilation": true,
+      "analyzeTypes": true,
+      "checkImports": true,
+      "detectLargeTypes": true
+    },
+    
+    "typescript": {
+      "strictMode": true,
+      "checkDecorators": true,
+      "analyzeInterfaces": true,
+      "checkEnums": true,
+      "validateGenerics": true
+    },
+    
+    "include": [
+      "src/**/*.{ts,tsx}",
+      "lib/**/*.{ts,tsx}",
+      "types/**/*.{ts,tsx}",
+      "interfaces/**/*.{ts,tsx}",
+      "models/**/*.{ts,tsx}",
+      "services/**/*.{ts,tsx}",
+      "utils/**/*.{ts,tsx}",
+      "*.d.ts"
+    ],
+    
+    "exclude": [
+      "node_modules/**",
+      ".git/**",
+      "dist/**",
+      "build/**",
+      "lib/**/*.js",
+      "lib/**/*.js.map",
+      "*.min.js",
+      "*.map",
+      "__tests__/**",
+      "*.test.{ts,tsx}",
+      "*.spec.{ts,tsx}",
+      "coverage/**"
+    ]
+  },
+  
+  "output": {
+    "format": "all",
+    "directory": "./smart-ast-output",
+    "includeTypeInfo": true,
+    "generateDocs": true,
+    "includeInterfaces": true
+  },
+  
+  "reporting": {
+    "includeComplexity": true,
+    "includeSecurity": true,
+    "includePerformance": true,
+    "includeTypeAnalysis": true,
+    "includeRecommendations": true,
+    "minSeverity": "low",
+    "groupByModule": true
+  }
+}

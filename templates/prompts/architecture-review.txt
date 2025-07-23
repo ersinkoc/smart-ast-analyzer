@@ -1,0 +1,17 @@
+You are conducting an architectural review of the application. Please provide a comprehensive analysis of the overall architecture, design patterns, and code organization.
+
+Focus on:
+1. Overall architecture and design patterns
+2. Code organization and structure
+3. Separation of concerns
+4. Dependency management
+5. Scalability and maintainability
+6. Technical debt and improvement opportunities
+
+Provide detailed JSON output with:
+- Architecture summary and patterns identified
+- Code organization analysis
+- Design pattern usage
+- Maintainability metrics
+- Scalability assessment
+- Recommendations for architectural improvements

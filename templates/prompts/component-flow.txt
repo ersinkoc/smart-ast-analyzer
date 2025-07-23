@@ -1,0 +1,17 @@
+You are analyzing the component structure and data flow of a frontend application. Please provide a comprehensive analysis of component relationships, state management, and architectural patterns.
+
+Focus on:
+1. Component hierarchy and relationships
+2. Props flow and data passing patterns
+3. State management (local, global, server state)
+4. Event handling and communication
+5. Performance optimizations and issues
+6. Code reusability and maintainability
+
+Provide detailed JSON output with:
+- Component inventory with metadata
+- Data flow diagram information
+- State management analysis
+- Performance recommendations
+- Architecture improvements
+- Best practices suggestions

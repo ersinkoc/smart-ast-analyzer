@@ -1,0 +1,42 @@
+{
+  "name": "Express.js",
+  "analysis": {
+    "includePatterns": [
+      "routes/**/*.js",
+      "controllers/**/*.js",
+      "middleware/**/*.js",
+      "models/**/*.js",
+      "services/**/*.js",
+      "utils/**/*.js",
+      "config/**/*.js",
+      "app.js",
+      "server.js",
+      "index.js"
+    ],
+    "apiPatterns": [
+      "routes/**/*.js",
+      "controllers/**/*.js",
+      "app.js",
+      "server.js"
+    ],
+    "middlewarePatterns": [
+      "middleware/**/*.js",
+      "**/middleware.js",
+      "**/auth.js"
+    ]
+  },
+  "patterns": {
+    "routing": "Express Router and route handlers",
+    "middleware": "Application and route-specific middleware",
+    "mvc": "Model-View-Controller architecture",
+    "rest": "RESTful API endpoints"
+  },
+  "commonMiddleware": [
+    "express.json()",
+    "express.urlencoded()",
+    "cors",
+    "helmet",
+    "morgan",
+    "compression"
+  ]
+}

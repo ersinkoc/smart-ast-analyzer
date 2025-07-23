@@ -1,0 +1,273 @@
+You are conducting a comprehensive security audit of the application. Please provide a detailed security analysis with vulnerability assessment following OWASP Top 10 2021 guidelines.
+
+**CRITICAL FOCUS AREAS:**
+
+## 1. AUTHENTICATION & AUTHORIZATION
+- **Authentication Methods**: Password, MFA, OAuth, SSO, Biometric
+- **Token Management**: JWT handling, refresh tokens, token storage, expiration
+- **Session Security**: Session fixation, hijacking, timeout, secure attributes
+- **Password Security**: Hashing algorithms (bcrypt/Argon2), complexity, reset flows
+- **Multi-Factor Authentication**: TOTP, SMS, hardware tokens, backup codes
+
+## 2. ACCESS CONTROL & PERMISSIONS
+- **Authorization Patterns**: RBAC, ABAC, ACL implementation
+- **Route Protection**: Protected endpoints, middleware chains, bypass attempts
+- **Privilege Escalation**: Vertical/horizontal privilege escalation vulnerabilities
+- **Resource Access**: File access, API endpoints, database queries
+- **Administrative Functions**: Admin panel security, privileged operations
+
+## 3. INPUT VALIDATION & INJECTION ATTACKS
+- **SQL Injection**: Parameterized queries, ORM usage, dynamic query construction
+- **NoSQL Injection**: MongoDB, document database query injection
+- **Command Injection**: Shell command execution, system calls
+- **Code Injection**: eval(), dynamic code execution, template injection
+- **LDAP/XPath Injection**: Directory service query injection
+- **Header Injection**: HTTP response splitting, CRLF injection
+
+## 4. OUTPUT ENCODING & XSS PREVENTION
+- **Cross-Site Scripting**: Reflected, Stored, DOM-based XSS
+- **Content Security Policy**: CSP headers, nonce usage, unsafe-inline
+- **Output Encoding**: HTML, JavaScript, CSS, URL encoding
+- **Template Security**: Server-side template injection, client-side templating
+
+## 5. CRYPTOGRAPHY & DATA PROTECTION
+- **Encryption**: AES, RSA implementation, key management
+- **Hashing**: SHA-256+, salt usage, timing attacks
+- **Random Number Generation**: Crypto-secure randomness, predictability
+- **Certificate Management**: TLS/SSL configuration, certificate validation
+- **Data at Rest**: Database encryption, file system encryption
+- **Data in Transit**: HTTPS enforcement, TLS version, cipher suites
+
+## 6. SECURITY CONFIGURATION
+- **Server Configuration**: Security headers, CORS, error handling
+- **Database Security**: Connection strings, user permissions, encryption
+- **File System**: Directory traversal, file upload restrictions
+- **Environment Variables**: Secret management, configuration exposure
+- **Logging & Monitoring**: Security event logging, log injection, sensitive data in logs
+
+## 7. BUSINESS LOGIC VULNERABILITIES
+- **Workflow Bypasses**: Step skipping, state manipulation
+- **Race Conditions**: TOCTOU, concurrent access issues
+- **Economic Logic**: Payment bypasses, price manipulation
+- **Rate Limiting**: Brute force protection, DoS prevention
+- **Data Validation**: Business rule enforcement, data integrity
+
+## 8. THIRD-PARTY DEPENDENCIES
+- **Vulnerable Components**: Known CVEs, outdated libraries
+- **Supply Chain**: Package integrity, malicious dependencies
+- **API Security**: Third-party API usage, key management
+- **CDN Security**: Content delivery network vulnerabilities
+
+## 9. SECURITY MONITORING & LOGGING
+- **Event Logging**: Authentication attempts, authorization failures
+- **Error Handling**: Information disclosure, stack traces
+- **Audit Trails**: User actions, administrative changes
+- **Intrusion Detection**: Suspicious activity patterns
+- **Log Protection**: Log tampering, log injection
+
+## 10. COMPLIANCE & STANDARDS
+- **OWASP Top 10 2021**: Compliance with latest guidelines
+- **PCI DSS**: Payment card industry standards (if applicable)
+- **GDPR/Privacy**: Data protection, consent management
+- **Industry Standards**: NIST, ISO 27001, SOC 2
+
+**OUTPUT FORMAT (JSON ONLY):**
+
+{
+  "executive_summary": {
+    "overall_security_score": "number (0-100)",
+    "risk_level": "critical|high|medium|low",
+    "total_vulnerabilities": "number",
+    "critical_issues": "number",
+    "compliance_score": "number (0-100)"
+  },
+  "authentication": {
+    "methods": ["password", "oauth", "mfa", "sso"],
+    "strengths": ["string"],
+    "weaknesses": ["string"],
+    "flows": {
+      "login": {
+        "secure": "boolean",
+        "issues": ["string"],
+        "recommendations": ["string"]
+      },
+      "logout": {
+        "secure": "boolean",
+        "session_invalidation": "boolean",
+        "issues": ["string"]
+      },
+      "password_reset": {
+        "secure": "boolean",
+        "token_security": "boolean",
+        "issues": ["string"]
+      }
+    }
+  },
+  "authorization": {
+    "model": "rbac|abac|acl|custom",
+    "implementation": "string",
+    "roles": ["string"],
+    "permissions": ["string"],
+    "issues": [
+      {
+        "type": "string",
+        "severity": "critical|high|medium|low",
+        "description": "string",
+        "location": "string",
+        "mitigation": "string"
+      }
+    ]
+  },
+  "vulnerabilities": [
+    {
+      "id": "string",
+      "owasp_category": "A01|A02|A03|A04|A05|A06|A07|A08|A09|A10",
+      "type": "string",
+      "severity": "critical|high|medium|low",
+      "cvss_score": "number",
+      "description": "string",
+      "location": {
+        "file": "string",
+        "line": "number",
+        "function": "string"
+      },
+      "exploit_scenario": "string",
+      "impact": "string",
+      "likelihood": "high|medium|low",
+      "mitigation": "string",
+      "remediation_effort": "high|medium|low",
+      "references": ["string"]
+    }
+  ],
+  "security_controls": {
+    "input_validation": {
+      "implemented": "boolean",
+      "coverage": "percentage",
+      "gaps": ["string"]
+    },
+    "output_encoding": {
+      "implemented": "boolean",
+      "contexts": ["html", "javascript", "css", "url"],
+      "csp_enabled": "boolean"
+    },
+    "csrf_protection": {
+      "enabled": "boolean",
+      "token_implementation": "string",
+      "issues": ["string"]
+    },
+    "rate_limiting": {
+      "enabled": "boolean",
+      "endpoints_covered": "number",
+      "algorithms": ["string"]
+    },
+    "security_headers": {
+      "hsts": "boolean",
+      "csp": "boolean",
+      "x_frame_options": "boolean",
+      "x_content_type_options": "boolean",
+      "referrer_policy": "boolean"
+    }
+  },
+  "cryptography": {
+    "password_hashing": {
+      "algorithm": "bcrypt|argon2|scrypt|pbkdf2|weak",
+      "salt_usage": "boolean",
+      "work_factor": "number",
+      "issues": ["string"]
+    },
+    "data_encryption": {
+      "at_rest": "boolean",
+      "in_transit": "boolean",
+      "algorithms": ["string"],
+      "key_management": "secure|weak|missing"
+    },
+    "random_generation": {
+      "crypto_secure": "boolean",
+      "usage_contexts": ["string"],
+      "issues": ["string"]
+    }
+  },
+  "session_management": {
+    "storage": "server|client|hybrid",
+    "security_attributes": {
+      "httponly": "boolean",
+      "secure": "boolean",
+      "samesite": "string"
+    },
+    "timeout": "appropriate|too_long|missing",
+    "regeneration": "login|privilege_change|never",
+    "issues": ["string"]
+  },
+  "business_logic": {
+    "workflow_security": "secure|vulnerable",
+    "data_validation": "comprehensive|partial|missing",
+    "race_conditions": "number",
+    "economic_logic": "secure|vulnerable",
+    "issues": ["string"]
+  },
+  "dependencies": {
+    "total_packages": "number",
+    "vulnerable_packages": [
+      {
+        "name": "string",
+        "version": "string",
+        "vulnerability": "string",
+        "severity": "critical|high|medium|low",
+        "fixed_in": "string"
+      }
+    ],
+    "outdated_packages": "number",
+    "risk_score": "number (0-100)"
+  },
+  "compliance": {
+    "owasp_top_10": {
+      "score": "number (0-100)",
+      "categories": {
+        "A01_broken_access_control": "pass|fail|partial",
+        "A02_cryptographic_failures": "pass|fail|partial",
+        "A03_injection": "pass|fail|partial",
+        "A04_insecure_design": "pass|fail|partial",
+        "A05_security_misconfiguration": "pass|fail|partial",
+        "A06_vulnerable_components": "pass|fail|partial",
+        "A07_identification_auth_failures": "pass|fail|partial",
+        "A08_software_data_integrity": "pass|fail|partial",
+        "A09_security_logging_monitoring": "pass|fail|partial",
+        "A10_server_side_request_forgery": "pass|fail|partial"
+      }
+    },
+    "industry_standards": {
+      "pci_dss": "compliant|non_compliant|not_applicable",
+      "gdpr": "compliant|non_compliant|not_applicable",
+      "hipaa": "compliant|non_compliant|not_applicable"
+    }
+  },
+  "security_metrics": {
+    "code_coverage": "percentage",
+    "test_coverage": "percentage",
+    "security_test_coverage": "percentage",
+    "false_positive_rate": "percentage",
+    "mean_time_to_remediate": "days"
+  },
+  "recommendations": [
+    {
+      "priority": "critical|high|medium|low",
+      "category": "string",
+      "title": "string",
+      "description": "string",
+      "implementation": {
+        "effort": "high|medium|low",
+        "timeline": "immediate|short_term|medium_term|long_term",
+        "cost": "high|medium|low",
+        "technical_debt": "increases|neutral|reduces"
+      },
+      "impact": "string",
+      "resources": ["string"]
+    }
+  ],
+  "action_plan": {
+    "immediate": ["string"],
+    "short_term": ["string"],
+    "medium_term": ["string"],
+    "long_term": ["string"]
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Smart AST Analyzer - React Project Configuration",
+  "description": "Optimized configuration for React applications",
+  
+  "ai": "mock",
+  "analysis": {
+    "type": "full",
+    "maxFiles": 200,
+    "deepAnalysis": true,
+    "framework": "react",
+    
+    "complexity": {
+      "maxCyclomatic": 8,
+      "maxCognitive": 12,
+      "maxNesting": 3,
+      "checkHooks": true,
+      "checkComponents": true
+    },
+    
+    "security": {
+      "scanSecrets": true,
+      "checkVulnerabilities": true,
+      "checkXSS": true,
+      "validateProps": true,
+      "checkDangerousHTML": true
+    },
+    
+    "performance": {
+      "checkRenderOptimization": true,
+      "detectMemoryLeaks": true,
+      "checkBundleSize": true,
+      "analyzeReRenders": true
+    },
+    
+    "include": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "components/**/*.{js,jsx,ts,tsx}",
+      "pages/**/*.{js,jsx,ts,tsx}",
+      "hooks/**/*.{js,jsx,ts,tsx}",
+      "utils/**/*.{js,jsx,ts,tsx}",
+      "lib/**/*.{js,jsx,ts,tsx}"
+    ],
+    
+    "exclude": [
+      "node_modules/**",
+      ".git/**",
+      "dist/**",
+      "build/**",
+      "*.min.js",
+      "*.map",
+      "__tests__/**",
+      "*.test.{js,jsx,ts,tsx}",
+      "*.spec.{js,jsx,ts,tsx}",
+      "coverage/**",
+      ".next/**",
+      "public/**"
+    ]
+  },
+  
+  "output": {
+    "format": "all",
+    "directory": "./smart-ast-output",
+    "includeSourceMaps": false,
+    "generateDocs": true,
+    "splitByComponent": true
+  },
+  
+  "reporting": {
+    "includeComplexity": true,
+    "includeSecurity": true,
+    "includePerformance": true,
+    "includeRecommendations": true,
+    "minSeverity": "low"
+  }
+}

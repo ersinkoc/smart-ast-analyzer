@@ -1,0 +1,82 @@
+# Test files
+tests/
+test/
+*.test.js
+*.spec.js
+__tests__/
+coverage/
+.nyc_output/
+
+# Development files
+.git/
+.github/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Config files
+.eslintrc*
+.prettierrc*
+jest.config.js
+.editorconfig
+
+# CI/CD
+.travis.yml
+.gitlab-ci.yml
+.circleci/
+appveyor.yml
+
+# Documentation source
+docs/
+*.md
+!README.md
+!CHANGELOG.md
+
+# Examples and scripts
+examples/
+scripts/*
+!scripts/postinstall.js
+!scripts/setup.js
+!scripts/check-dependencies.js
+demo/
+
+# Build and cache
+.cache/
+.smart-ast-cache/
+.smart-ast-temp/
+dist/
+build/
+tmp/
+temp/
+
+# Output files
+smart-ast-output/
+output/
+reports/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+node_modules/
+.npm/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Misc
+.gitignore
+.npmignore
+Makefile
+docker-compose.yml
+Dockerfile
+.dockerignore

@@ -1,0 +1,76 @@
+#!/usr/bin/env node
+
+const { Command } = require('commander');
+const chalk = require('chalk');
+const { version } = require('../package.json');
+const SmartASTAnalyzer = require('../lib/core/smart-ast-analyzer');
+
+const program = new Command();
+
+program
+  .name('smart-ast')
+  .description('AI-powered project analysis tool')
+  .version(version);
+
+program
+  .command('analyze')
+  .description('Analyze current project with AI')
+  .option('-p, --path <path>', 'Project path to analyze', process.cwd())
+  .option('-a, --ai <type>', 'AI to use: gemini, claude, or mock', 'mock')
+  .option('-t, --type <type>', 'Analysis type: api|component|websocket|auth|db|perf|full', 'full')
+  .option('-o, --output <dir>', 'Output directory', './smart-ast-output')
+  .option('-f, --format <format>', 'Output format: json|markdown|html|all', 'all')
+  .option('--max-files <number>', 'Maximum files to analyze per category', '50')
+  .option('--include <patterns>', 'Include file patterns (comma-separated)')
+  .option('--exclude <patterns>', 'Exclude file patterns (comma-separated)')
+  .option('--no-cache', 'Disable caching')
+  .option('--verbose', 'Verbose output')
+  .option('--config <file>', 'Custom config file')
+  .action(async (options) => {
+    try {
+      console.log(chalk.cyan.bold('🚀 Smart AST Analyzer'));
+      console.log(chalk.gray(`Version ${version}\n`));
+      
+      const analyzer = new SmartASTAnalyzer(options);
+      await analyzer.run();
+    } catch (error) {
+      console.error(chalk.red('❌ Error:'), error.message);
+      if (options.verbose) {
+        console.error(error.stack);
+      }
+      process.exit(1);
+    }
+  });
+
+program
+  .command('init')
+  .description('Initialize smart-ast configuration')
+  .action(async () => {
+    const ConfigManager = require('../lib/core/config-manager');
+    const configManager = new ConfigManager();
+    await configManager.initialize();
+    console.log(chalk.green('✅ Configuration initialized'));
+  });
+
+program
+  .command('list-frameworks')
+  .description('List supported frameworks')
+  .action(() => {
+    const frameworks = [
+      'Next.js',
+      'React',
+      'Vue.js',
+      'Angular',
+      'Svelte',
+      'Express.js',
+      'NestJS',
+      'Django',
+      'Flask',
+      'FastAPI'
+    ];
+    
+    console.log(chalk.cyan.bold('Supported Frameworks:'));
+    frameworks.forEach(fw => console.log(chalk.green(`  • ${fw}`)));
+  });
+
+program.parse(process.argv);

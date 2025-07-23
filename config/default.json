@@ -1,0 +1,50 @@
+{
+  "analysis": {
+    "maxFilesPerCategory": 50,
+    "maxFileSize": "1MB",
+    "excludePatterns": [
+      "node_modules/**",
+      ".git/**",
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      ".next/**",
+      ".nuxt/**",
+      "vendor/**",
+      "*.min.js",
+      "*.bundle.js",
+      "*.map"
+    ],
+    "includePatterns": [
+      "**/*.js",
+      "**/*.jsx",
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.vue",
+      "**/*.py",
+      "**/*.java",
+      "**/*.go",
+      "**/*.rs"
+    ]
+  },
+  "ai": {
+    "timeout": 300000,
+    "maxRetries": 3,
+    "model": "default",
+    "preferredProvider": "gemini"
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "directory": ".smart-ast-cache"
+  },
+  "output": {
+    "directory": "./smart-ast-output",
+    "formats": ["json", "markdown", "html"],
+    "includeRawResponse": false
+  },
+  "logging": {
+    "verbose": false,
+    "level": "info"
+  }
+}

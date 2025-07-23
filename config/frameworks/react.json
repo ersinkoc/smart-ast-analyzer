@@ -1,0 +1,40 @@
+{
+  "name": "React",
+  "analysis": {
+    "includePatterns": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "components/**/*.{js,jsx,ts,tsx}",
+      "hooks/**/*.{js,ts}",
+      "utils/**/*.{js,ts}",
+      "contexts/**/*.{js,ts}",
+      "services/**/*.{js,ts}",
+      "store/**/*.{js,ts}"
+    ],
+    "componentPatterns": [
+      "src/**/*.{jsx,tsx}",
+      "components/**/*.{jsx,tsx}",
+      "pages/**/*.{jsx,tsx}",
+      "views/**/*.{jsx,tsx}"
+    ],
+    "hookPatterns": [
+      "hooks/**/*.{js,ts}",
+      "src/hooks/**/*.{js,ts}",
+      "**/*Hook.{js,ts}",
+      "**/use*.{js,ts}"
+    ]
+  },
+  "stateManagement": [
+    "redux",
+    "zustand",
+    "mobx",
+    "jotai",
+    "recoil",
+    "context"
+  ],
+  "patterns": {
+    "functional": "Functional components with hooks",
+    "class": "Class-based components",
+    "hoc": "Higher-order components",
+    "render-props": "Render props pattern"
+  }
+}

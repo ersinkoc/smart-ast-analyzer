@@ -1,0 +1,41 @@
+{
+  "name": "Vue.js",
+  "analysis": {
+    "includePatterns": [
+      "src/**/*.{js,ts,vue}",
+      "components/**/*.vue",
+      "views/**/*.vue",
+      "pages/**/*.vue",
+      "composables/**/*.{js,ts}",
+      "utils/**/*.{js,ts}",
+      "store/**/*.{js,ts}",
+      "plugins/**/*.{js,ts}"
+    ],
+    "componentPatterns": [
+      "src/**/*.vue",
+      "components/**/*.vue",
+      "views/**/*.vue",
+      "pages/**/*.vue"
+    ],
+    "composablePatterns": [
+      "composables/**/*.{js,ts}",
+      "src/composables/**/*.{js,ts}",
+      "**/use*.{js,ts}"
+    ]
+  },
+  "apis": {
+    "composition": "Composition API with setup()",
+    "options": "Options API with data, methods, computed"
+  },
+  "stateManagement": [
+    "vuex",
+    "pinia",
+    "composition-api"
+  ],
+  "specialFiles": [
+    "main.{js,ts}",
+    "App.vue",
+    "router/index.{js,ts}",
+    "store/index.{js,ts}"
+  ]
+}

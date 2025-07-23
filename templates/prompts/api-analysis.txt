@@ -1,0 +1,16 @@
+You are analyzing the API structure of a web application. Please provide a comprehensive analysis of all API endpoints, their security, performance, and usage patterns.
+
+Focus on:
+1. All HTTP endpoints (GET, POST, PUT, DELETE, PATCH)
+2. Authentication and authorization mechanisms
+3. Request/response formats and validation
+4. Security vulnerabilities
+5. Performance issues
+6. Code organization and best practices
+
+Provide detailed JSON output with:
+- List of all endpoints with metadata
+- Security analysis and recommendations
+- Performance bottlenecks
+- Usage patterns and relationships
+- Suggestions for improvements

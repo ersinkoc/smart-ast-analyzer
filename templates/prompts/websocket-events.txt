@@ -1,0 +1,17 @@
+You are analyzing WebSocket implementation and real-time communication patterns. Please provide a comprehensive analysis of event handling, connection management, and real-time features.
+
+Focus on:
+1. WebSocket connection setup and configuration
+2. Event definitions and handlers (client & server)
+3. Room/namespace management
+4. Authentication and security
+5. Error handling and reconnection logic
+6. Performance and scalability considerations
+
+Provide detailed JSON output with:
+- Complete event mapping
+- Connection lifecycle analysis
+- Security assessment
+- Performance recommendations
+- Architecture suggestions
+- Best practices for real-time features
