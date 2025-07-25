@@ -1,6 +1,6 @@
 {
   "name": "smart-ast-analyzer",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Advanced AST-based project analysis tool with deep complexity analysis, security scanning, and optional AI enhancement",
   "main": "index.js",
   "bin": {
