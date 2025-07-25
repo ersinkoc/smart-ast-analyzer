@@ -247,5 +247,38 @@ describe('APIDocsGenerator', () => {
       await expect(generator.generateAPIDocumentation(mockAnalysisResults, outputPath))
         .resolves.toBeDefined();
     });
+
+    test('should include function warnings in complexity analysis', async () => {
+      const analysisWithWarnings = {
+        ...mockAnalysisResults,
+        deepAnalysis: {
+          complexity: {
+            overall: { rating: 'moderate' },
+            functions: [
+              {
+                name: 'complexFunction',
+                file: 'api.js',
+                line: 10,
+                cyclomatic: 15,
+                cognitive: 12,
+                warnings: ['High cyclomatic complexity', 'Deep nesting detected']
+              }
+            ]
+          }
+        }
+      };
+
+      const result = await generator.generateAPIDocumentation(analysisWithWarnings, outputPath);
+      
+      expect(result).toBeDefined();
+      expect(result).toBe(path.join(outputPath, 'api-docs'));
+      
+      // Verify writeFile was called with correct content
+      expect(mockFs.writeFile).toHaveBeenCalledWith(
+        expect.stringContaining('API.md'),
+        expect.stringContaining('⚠️ High cyclomatic complexity, Deep nesting detected'),
+        'utf-8'
+      );
+    });
   });
 });

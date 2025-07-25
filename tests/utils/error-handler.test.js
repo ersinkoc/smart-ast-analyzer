@@ -1216,4 +1216,31 @@ describe('ErrorHandler', () => {
       expect(errorHandler.isFilesystemError(error)).toBe(false);
     });
   });
+
+  describe('edge cases for 100% coverage', () => {
+    test('should provide generic suggestion for filesystem errors without specific codes', () => {
+      const error = new Error('Generic filesystem error');
+      error.code = 'UNKNOWN_FS_ERROR';
+      
+      const suggestion = errorHandler.generateSuggestion('filesystem', error);
+      
+      expect(suggestion).toBe('Verify file paths and permissions are correct');
+    });
+
+    test('should throw last error when all retries fail', async () => {
+      let attemptCount = 0;
+      const operation = jest.fn().mockImplementation(() => {
+        attemptCount++;
+        const error = new Error(`Attempt ${attemptCount} failed`);
+        error.code = 'TIMEOUT'; // Make it retryable
+        throw error;
+      });
+      
+      await expect(
+        errorHandler.executeWithRetry(operation, 'Test operation', 3, 10)
+      ).rejects.toThrow('Attempt 3 failed');
+      
+      expect(operation).toHaveBeenCalledTimes(3);
+    });
+  });
 });

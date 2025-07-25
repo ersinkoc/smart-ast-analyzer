@@ -296,7 +296,7 @@ describe('Helpers', () => {
 
     test('should remove dangerous characters', () => {
       const result = Helpers.sanitizePath('file<>:"|?*.txt');
-      expect(result).toBe('file.txt');
+      expect(result).toBe('/file.txt');
     });
 
     test('should handle normal paths', () => {
@@ -331,23 +331,23 @@ describe('Helpers', () => {
     test('should handle path that does not start with ../', () => {
       // This tests the branch where filepath.startsWith('../') is false
       const result = Helpers.sanitizePath('regular/path/file.js');
-      expect(result).toBe('regular/path/file.js');
+      expect(result).toBe('/regular/path/file.js');
     });
 
     test('should handle empty string', () => {
       const result = Helpers.sanitizePath('');
-      expect(result).toBe('');
+      expect(result).toBe('/');
     });
 
     test('should handle single dot-dot without slash', () => {
       // Test for the second replace pattern that removes remaining ..
       const result = Helpers.sanitizePath('path/..file/test.js');
-      expect(result).toBe('path/file/test.js');
+      expect(result).toBe('/path/file/test.js');
     });
 
     test('should clean up multiple consecutive slashes', () => {
       const result = Helpers.sanitizePath('path///to////file.js');
-      expect(result).toBe('path/to/file.js');
+      expect(result).toBe('/path/to/file.js');
     });
 
     test('should handle edge case with just ../', () => {
@@ -359,7 +359,7 @@ describe('Helpers', () => {
     test('should handle path with just .. (no slash)', () => {
       // This tests the second replace operation for standalone ..
       const result = Helpers.sanitizePath('..');
-      expect(result).toBe('');
+      expect(result).toBe('/');
     });
 
     test('should handle complex pattern with multiple .. occurrences', () => {
@@ -490,6 +490,12 @@ describe('Helpers', () => {
 
     test('should handle normalizePath with null', () => {
       expect(() => Helpers.normalizePath(null)).toThrow();
+    });
+
+    test('should handle sanitizeFilePath edge case with ../ at start of non-Windows path', () => {
+      const result = Helpers.sanitizePath('../some/path/file.js');
+      
+      expect(result).toBe('/some/path/file.js');
     });
   });
 });

@@ -598,4 +598,19 @@ describe('SecurityReportGenerator', () => {
       expect(js).toContain('vulnerability');
     });
   });
+
+  describe('edge cases for 100% coverage', () => {
+    test('should handle long_term timeline recommendations', () => {
+      const securityResults = {
+        recommendations: [
+          { description: 'Long term fix', implementation: { timeline: 'long_term' } }
+        ]
+      };
+      
+      const plan = generator.generateActionPlan(securityResults);
+      
+      expect(plan.longTerm).toHaveLength(1);
+      expect(plan.longTerm[0].description).toBe('Long term fix');
+    });
+  });
 });

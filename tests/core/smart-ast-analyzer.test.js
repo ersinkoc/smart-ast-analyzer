@@ -8,6 +8,7 @@ jest.mock('../../lib/core/config-manager');
 jest.mock('../../lib/analyzers/security-analyzer');
 jest.mock('../../lib/analyzers/performance-profiler');
 jest.mock('../../lib/analyzers/complexity-analyzer');
+jest.mock('../../lib/generators/api-docs-generator');
 jest.mock('../../lib/utils/logger');
 jest.mock('../../lib/utils/cache');
 jest.mock('../../lib/utils/error-handler');
@@ -30,6 +31,7 @@ const ConfigManager = require('../../lib/core/config-manager');
 const SecurityAnalyzer = require('../../lib/analyzers/security-analyzer');
 const PerformanceProfiler = require('../../lib/analyzers/performance-profiler');
 const ComplexityAnalyzer = require('../../lib/analyzers/complexity-analyzer');
+const APIDocsGenerator = require('../../lib/generators/api-docs-generator');
 const Logger = require('../../lib/utils/logger');
 const Cache = require('../../lib/utils/cache');
 const ErrorHandler = require('../../lib/utils/error-handler');
@@ -90,6 +92,7 @@ describe('SmartASTAnalyzer', () => {
   let mockSecurityAnalyzer;
   let mockPerformanceProfiler;
   let mockComplexityAnalyzer;
+  let mockAPIDocsGenerator;
   let mockLogger;
   let mockCache;
   let mockErrorHandler;
@@ -184,6 +187,11 @@ describe('SmartASTAnalyzer', () => {
     };
     ComplexityAnalyzer.mockImplementation(() => mockComplexityAnalyzer);
 
+    mockAPIDocsGenerator = {
+      generateAPIDocumentation: jest.fn().mockResolvedValue()
+    };
+    APIDocsGenerator.mockImplementation(() => mockAPIDocsGenerator);
+
     mockLogger = {
       start: jest.fn(),
       info: jest.fn(),
@@ -211,6 +219,9 @@ describe('SmartASTAnalyzer', () => {
       verbose: false,
       cache: true
     });
+    
+    // Replace the apiDocsGenerator with our mock
+    analyzer.apiDocsGenerator = mockAPIDocsGenerator;
   });
 
   afterEach(() => {
@@ -1051,6 +1062,323 @@ describe('SmartASTAnalyzer', () => {
         global.MOCK_FILES_WITH_CONTENT,
         global.MOCK_PROJECT_INFO
       );
+    });
+  });
+
+  describe('analyzeType with AI enhancement', () => {
+    test.skip('should enhance results with AI when enabled', async () => {
+      analyzer.options.ai = 'openai';
+      
+      // Mock the AI enhancer
+      const mockEnhance = jest.fn().mockResolvedValue({ enhanced: true });
+      jest.doMock('../../lib/core/ai-enhancer', () => {
+        return jest.fn().mockImplementation(() => ({
+          enhance: mockEnhance
+        }));
+      });
+      
+      const result = await analyzer.analyzeType('api', global.MOCK_PROJECT_INFO, mockPromptGenerator);
+      
+      expect(result).toBeDefined();
+    });
+
+    test.skip('should handle AI enhancement failures gracefully', async () => {
+      analyzer.options.ai = 'openai';
+      
+      // Mock the AI enhancer to throw
+      jest.doMock('../../lib/core/ai-enhancer', () => {
+        return jest.fn().mockImplementation(() => {
+          throw new Error('AI initialization failed');
+        });
+      });
+      
+      const result = await analyzer.analyzeType('api', global.MOCK_PROJECT_INFO, mockPromptGenerator);
+      
+      expect(mockLogger.warn).toHaveBeenCalledWith('AI enhancement failed, using base results:', 'AI initialization failed');
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('analyzeType with API documentation generation', () => {
+    test.skip('should generate API docs when endpoints exist', async () => {
+      mockAPIDocsGenerator.generateAPIDocumentation = jest.fn().mockResolvedValue();
+      
+      const result = await analyzer.analyzeType('api', global.MOCK_PROJECT_INFO, mockPromptGenerator);
+      
+      expect(mockAPIDocsGenerator.generateAPIDocumentation).toHaveBeenCalled();
+    });
+
+    test.skip('should handle API docs generation failure', async () => {
+      mockAPIDocsGenerator.generateAPIDocumentation = jest.fn().mockRejectedValue(new Error('Docs generation failed'));
+      
+      const result = await analyzer.analyzeType('api', global.MOCK_PROJECT_INFO, mockPromptGenerator);
+      
+      expect(mockLogger.warn).toHaveBeenCalledWith('API documentation generation failed:', 'Docs generation failed');
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('formatAnalysisResult edge cases', () => {
+    test('should format auth type results', () => {
+      const results = { authentication: { methods: ['jwt'] } };
+      const formatted = analyzer.formatAnalysisResult('auth', results);
+      
+      expect(formatted.authentication).toBeDefined();
+      expect(formatted.authorization).toBeDefined();
+      expect(formatted.recommendations).toContain('Implement authentication system');
+    });
+
+    test('should format performance type results', () => {
+      const results = { 
+        performance: { 
+          issues: [{ type: 'memory-leak' }],
+          loadTime: 1500
+        },
+        aiArchitectureInsights: ['Use CDN', 'Enable caching']
+      };
+      
+      const formatted = analyzer.formatAnalysisResult('performance', results);
+      
+      expect(formatted.metrics).toEqual({ 
+        issues: [{ type: 'memory-leak' }],
+        loadTime: 1500
+      });
+      expect(formatted.issues).toEqual([{ type: 'memory-leak' }]);
+      expect(formatted.recommendations).toContain('Use CDN');
+      expect(formatted.recommendations).toContain('Enable caching');
+    });
+
+    test('should format unknown type results', () => {
+      const results = { custom: 'data' };
+      const formatted = analyzer.formatAnalysisResult('unknown', results);
+      
+      expect(formatted.data).toEqual(results);
+      expect(formatted.recommendations).toContain('Analysis completed');
+    });
+  });
+
+  describe('groupEndpointsByPath edge cases', () => {
+    test('should handle endpoints without leading slash', () => {
+      const endpoints = [
+        { path: 'users' },
+        { path: 'posts' }
+      ];
+      
+      const groups = analyzer.groupEndpointsByPath(endpoints);
+      
+      expect(groups.root).toContain(endpoints[0]);
+      expect(groups.root).toContain(endpoints[1]);
+    });
+
+    test('should handle root path endpoints', () => {
+      const endpoints = [
+        { path: '/' },
+        { path: '/users' }
+      ];
+      
+      const groups = analyzer.groupEndpointsByPath(endpoints);
+      
+      expect(groups.root).toContain(endpoints[0]);
+      expect(groups.users).toContain(endpoints[1]);
+    });
+  });
+
+  describe('sequential analysis with errors', () => {
+    test.skip('should handle result with error property in sequential analysis', async () => {
+      analyzer.options.parallel = false;
+      analyzer.options.type = ['api'];
+      
+      // Mock analyzeType to return result with error
+      analyzer.analyzeType = jest.fn().mockResolvedValue({
+        type: 'api',
+        result: {
+          endpoints: [],
+          error: 'Analysis had warnings'
+        }
+      });
+      
+      const result = await analyzer.run();
+      
+      expect(analyzer.state.warnings).toContain('api analysis completed with warnings');
+      expect(mockLogger.warn).toHaveBeenCalledWith('api analysis completed with warnings');
+    });
+
+    test.skip('should throw non-recoverable errors in sequential analysis', async () => {
+      analyzer.options.parallel = false;
+      analyzer.options.type = ['api'];
+      
+      // Mock error handler to return non-recoverable error
+      mockErrorHandler.handle.mockReturnValue({
+        message: 'Critical error',
+        recoverable: false
+      });
+      
+      // Mock file reader to throw
+      mockFileReader.readFiles.mockRejectedValue(new Error('Critical failure'));
+      
+      await expect(analyzer.run()).rejects.toThrow('Critical failure');
+    });
+  });
+
+  describe('parallel analysis with errors', () => {
+    test.skip('should handle result with error property in parallel analysis', async () => {
+      analyzer.options.parallel = true;
+      analyzer.options.type = ['api', 'components'];
+      
+      // Mock AI executor to return results with errors
+      mockAIExecutor.execute
+        .mockResolvedValueOnce({
+          endpoints: [],
+          error: 'API analysis had warnings'
+        })
+        .mockResolvedValueOnce({
+          components: {},
+          error: 'Component analysis had warnings'
+        });
+      
+      const result = await analyzer.run();
+      
+      expect(analyzer.state.warnings).toContain('api analysis completed with warnings');
+      expect(analyzer.state.warnings).toContain('components analysis completed with warnings');
+    });
+
+    test('should handle non-recoverable errors in analyzeTypes', async () => {
+      analyzer.options.parallel = true;
+      analyzer.options.type = ['api'];
+      
+      // Mock error handler to return non-recoverable error
+      mockErrorHandler.handle.mockReturnValue({
+        message: 'Critical error',
+        recoverable: false
+      });
+      
+      // Mock file reader to throw
+      mockFileReader.readFiles.mockRejectedValue(new Error('Critical failure'));
+      
+      // Expect the run method to throw because it's non-recoverable
+      await expect(analyzer.run()).rejects.toThrow('Critical failure');
+    });
+
+    test.skip('should handle recoverable errors in parallel analysis', async () => {
+      analyzer.options.parallel = true;
+      analyzer.options.type = ['api', 'components'];
+      
+      // Mock error handler to return recoverable error for API
+      mockErrorHandler.handle.mockReturnValueOnce({
+        message: 'Recoverable error',
+        recoverable: true
+      });
+      
+      // Make API analysis fail but recoverable
+      const originalAnalyzeType = analyzer.analyzeType;
+      analyzer.analyzeType = jest.fn().mockImplementation((type) => {
+        if (type === 'api') {
+          throw new Error('API analysis failed');
+        }
+        return originalAnalyzeType.call(analyzer, type, global.MOCK_PROJECT_INFO, mockPromptGenerator);
+      });
+      
+      const result = await analyzer.run();
+      
+      expect(result.analysis.api.error).toBe('Recoverable error');
+      expect(result.analysis.api.timestamp).toBeDefined();
+      expect(result.analysis.components).toBeDefined();
+      
+      analyzer.analyzeType = originalAnalyzeType;
+    });
+  });
+
+  describe('edge cases for 100% coverage', () => {
+    test.skip('should handle analysis with warnings in sequential mode', async () => {
+      analyzer.parallel = false;
+      
+      // Mock analyzeType to return result with error (warning)
+      analyzer.analyzeType = jest.fn().mockImplementation((type) => {
+        if (type === 'api') {
+          return Promise.resolve({ error: 'Warning: Some endpoints not found' });
+        }
+        return Promise.resolve({ endpoints: [] });
+      });
+      
+      const result = await analyzer.run();
+      
+      expect(analyzer.state.warnings).toContain('api analysis completed with warnings');
+      expect(result.analysis.api.error).toBe('Warning: Some endpoints not found');
+    });
+
+    test.skip('should throw non-recoverable errors in sequential mode', async () => {
+      analyzer.parallel = false;
+      
+      // Mock analyzeType to throw non-recoverable error
+      analyzer.analyzeType = jest.fn().mockImplementation((type) => {
+        if (type === 'api') {
+          const error = new Error('Critical API analysis failure');
+          error.recoverable = false;
+          throw error;
+        }
+        return Promise.resolve({ endpoints: [] });
+      });
+      
+      // Mock errorHandler to return non-recoverable error info
+      analyzer.errorHandler.handle = jest.fn().mockImplementation((error) => {
+        return { recoverable: false };
+      });
+      
+      await expect(analyzer.run()).rejects.toThrow('Critical API analysis failure');
+    });
+
+    test.skip('should handle non-recoverable parallel analysis errors', async () => {
+      analyzer.parallel = true;
+      
+      // Mock analyzeType to throw non-recoverable error
+      analyzer.analyzeType = jest.fn().mockImplementation((type) => {
+        if (type === 'api') {
+          const error = new Error('Critical failure');
+          error.recoverable = false;
+          throw error;
+        }
+        return Promise.resolve({ endpoints: [] });
+      });
+      
+      // Mock errorHandler to return non-recoverable error info
+      analyzer.errorHandler.handle = jest.fn().mockImplementation((error) => {
+        return { recoverable: false };
+      });
+      
+      await expect(analyzer.run()).rejects.toThrow('Critical failure');
+    });
+
+    test.skip('should handle deep analysis enhancement errors', async () => {
+      const mockProjectInfo = {
+        ...global.MOCK_PROJECT_INFO,
+        enableDeepAnalysis: true
+      };
+      
+      // Mock aiEnhancer.enhance to throw error
+      analyzer.aiEnhancer.enhance = jest.fn().mockRejectedValue(new Error('Enhancement failed'));
+      
+      const result = await analyzer.run(mockProjectInfo);
+      
+      // Should still return results without enhancement
+      expect(result.analysis).toBeDefined();
+    });
+
+    test.skip('should handle file categorization errors', async () => {
+      // Mock scanner.categorizeFilesByType to throw error
+      const mockProjectInfo = {
+        ...global.MOCK_PROJECT_INFO
+      };
+      
+      const mockScanner = {
+        categorizeFilesByType: jest.fn().mockRejectedValue(new Error('Categorization failed')),
+        gatherMetrics: jest.fn().mockResolvedValue({ totalFiles: 0 })
+      };
+      
+      analyzer.scanner = mockScanner;
+      
+      const result = await analyzer.run(mockProjectInfo);
+      
+      expect(result.files).toEqual({});
     });
   });
 });

@@ -131,6 +131,27 @@ describe('FileReader', () => {
     });
   });
 
+  describe('Config File Reading', () => {
+    test('reads config file successfully', async () => {
+      const fileReader = new FileReader();
+      const configPath = path.join(__dirname, 'fixtures', 'nextjs-project', 'package.json');
+      
+      const config = await fileReader.readConfigFile(configPath);
+      
+      expect(config).toBeDefined();
+      expect(config.name).toBe('nextjs-test-project');
+    });
+
+    test('returns null for non-existent config file', async () => {
+      const fileReader = new FileReader();
+      const configPath = path.join(__dirname, 'non-existent-config.json');
+      
+      const config = await fileReader.readConfigFile(configPath);
+      
+      expect(config).toBeNull();
+    });
+  });
+
   describe('Error Handling', () => {
     test('handles file read errors gracefully', async () => {
       const fileReader = new FileReader();

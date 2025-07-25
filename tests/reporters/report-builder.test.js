@@ -4,6 +4,7 @@ const path = require('path');
 const JSONFormatter = require('../../lib/reporters/json-formatter');
 const MarkdownFormatter = require('../../lib/reporters/markdown-formatter');
 const HTMLGenerator = require('../../lib/reporters/html-generator');
+const MetricsVisualizer = require('../../lib/reporters/metrics-visualizer');
 
 // Mock dependencies
 jest.mock('fs', () => ({
@@ -17,6 +18,7 @@ jest.mock('fs', () => ({
 jest.mock('../../lib/reporters/json-formatter');
 jest.mock('../../lib/reporters/markdown-formatter');
 jest.mock('../../lib/reporters/html-generator');
+jest.mock('../../lib/reporters/metrics-visualizer');
 
 describe('ReportBuilder', () => {
   let builder;
@@ -172,6 +174,51 @@ describe('ReportBuilder', () => {
         expect.stringContaining('index.json'),
         expect.stringContaining('"analysis-')
       );
+    });
+
+    test('should handle visualization generation errors gracefully', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      
+      // Add deepAnalysis to trigger visualization
+      const analysisWithDeep = {
+        ...mockAnalysisResults,
+        deepAnalysis: {
+          complexity: { functions: [] },
+          security: { vulnerabilities: [] }
+        }
+      };
+      
+      // Mock the metricsVisualizer instance to throw an error
+      builder.metricsVisualizer = {
+        generateVisualization: jest.fn().mockRejectedValue(new Error('Viz generation failed'))
+      };
+      
+      const result = await builder.build(analysisWithDeep, mockProjectInfo);
+      
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to generate visualizations:', 'Viz generation failed');
+      expect(result.files).toBeDefined(); // Should still generate other reports
+      
+      consoleSpy.mockRestore();
+    });
+
+    test('should generate visualizations when deepAnalysis exists', async () => {
+      const analysisWithDeep = {
+        ...mockAnalysisResults,
+        deepAnalysis: {
+          complexity: { functions: [] },
+          security: { vulnerabilities: [] }
+        }
+      };
+      
+      // Mock the metricsVisualizer instance to succeed
+      const mockVizDir = '/path/to/viz';
+      builder.metricsVisualizer = {
+        generateVisualization: jest.fn().mockResolvedValue(mockVizDir)
+      };
+      
+      const result = await builder.build(analysisWithDeep, mockProjectInfo);
+      
+      expect(result.files).toContain(mockVizDir);
     });
   });
 

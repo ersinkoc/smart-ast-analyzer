@@ -269,6 +269,29 @@ describe('ConfigManager', () => {
       
       expect(merged).toEqual(defaultConfig);
     });
+
+    test('should handle primitive values in userConfig', () => {
+      configManager = new ConfigManager();
+      const defaultConfig = {
+        analysis: { nested: { value: 'test' } },
+        timeout: 30000,
+        verbose: false
+      };
+      
+      const userConfig = {
+        timeout: 60000,  // primitive value
+        verbose: true,   // primitive boolean
+        customString: 'hello',  // new primitive string
+        customArray: ['a', 'b', 'c']  // array value
+      };
+      
+      const merged = configManager.mergeConfigs(defaultConfig, userConfig);
+      
+      expect(merged.timeout).toBe(60000);
+      expect(merged.verbose).toBe(true);
+      expect(merged.customString).toBe('hello');
+      expect(merged.customArray).toEqual(['a', 'b', 'c']);
+    });
   });
 
   describe('initialize', () => {

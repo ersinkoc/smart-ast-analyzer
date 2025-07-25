@@ -86,6 +86,16 @@ describe('AIExecutor', () => {
   });
 
   describe('execute', () => {
+    test('should execute mock method for mock type', async () => {
+      executor = new AIExecutor('mock');
+      executor.executeMock = jest.fn().mockResolvedValue({ success: true });
+      
+      const result = await executor.execute('test prompt', { type: 'api' });
+      
+      expect(executor.executeMock).toHaveBeenCalledWith('test prompt', { type: 'api' });
+      expect(result).toEqual({ success: true });
+    });
+
     test('should execute gemini method for gemini type', async () => {
       executor.executeGemini = jest.fn().mockResolvedValue({ success: true });
       
@@ -329,6 +339,49 @@ describe('AIExecutor', () => {
       
       consoleSpy.mockRestore();
     });
+
+    test('should throw specific error when Claude execution fails', async () => {
+      executor.createPromptFile = jest.fn().mockResolvedValue('test.txt');
+      
+      exec.mockImplementation((command, options, callback) => {
+        if (!callback && typeof options === 'function') {
+          callback = options;
+          options = {};
+        }
+        
+        if (command.includes('--version')) {
+          callback(null, { stdout: 'v1.0.0', stderr: '' });
+        } else {
+          callback(new Error('Claude process failed'));
+        }
+      });
+
+      await expect(executor.executeClaude('test prompt', {}))
+        .rejects.toThrow('Claude execution failed: Claude process failed');
+    });
+
+    test('should cleanup prompt file even when Claude execution fails', async () => {
+      const mockPromptFile = 'test-prompt.txt';
+      executor.createPromptFile = jest.fn().mockResolvedValue(mockPromptFile);
+      
+      exec.mockImplementation((command, options, callback) => {
+        if (!callback && typeof options === 'function') {
+          callback = options;
+          options = {};
+        }
+        
+        if (command.includes('--version')) {
+          callback(null, { stdout: 'v1.0.0', stderr: '' });
+        } else {
+          callback(new Error('Execution failed'));
+        }
+      });
+
+      await expect(executor.executeClaude('test prompt', {}))
+        .rejects.toThrow('Claude execution failed: Execution failed');
+      
+      expect(fs.unlink).toHaveBeenCalledWith(mockPromptFile);
+    });
   });
 
   describe('createPromptFile', () => {
@@ -528,5 +581,452 @@ describe('AIExecutor', () => {
     });
   });
 
+  describe('executeMock', () => {
+    test('should return mock data with delay', async () => {
+      const result = await executor.executeMock('test prompt', {});
+      
+      expect(Helpers.delay).toHaveBeenCalledWith(100);
+      expect(result).toHaveProperty('endpoints');
+      expect(result.endpoints).toBeInstanceOf(Array);
+    });
+
+    test('should call analyzeRealFiles when files are provided', async () => {
+      executor.analyzeRealFiles = jest.fn().mockResolvedValue({ test: 'result' });
+      const context = {
+        files: [{ path: 'file1.js', content: 'code' }],
+        type: 'api'
+      };
+      
+      const result = await executor.executeMock('test prompt', context);
+      
+      expect(executor.analyzeRealFiles).toHaveBeenCalledWith(['file1.js'], 'api');
+      expect(result).toEqual({ test: 'result' });
+    });
+
+    test('should return appropriate mock data for different analysis types', async () => {
+      const types = ['api', 'component', 'websocket', 'auth', 'database', 'performance'];
+      
+      for (const type of types) {
+        const result = await executor.executeMock('test prompt', { type });
+        expect(result).toBeDefined();
+      }
+    });
+
+    test('should extract file paths when files have only path property', async () => {
+      executor.analyzeRealFiles = jest.fn().mockResolvedValue({ test: 'result' });
+      const context = {
+        files: [{ path: 'file1.js' }, { path: 'file2.js' }],
+        type: 'api'
+      };
+      
+      const result = await executor.executeMock('test prompt', context);
+      
+      expect(executor.analyzeRealFiles).toHaveBeenCalledWith(['file1.js', 'file2.js'], 'api');
+    });
+
+    test('should extract file paths when files are strings', async () => {
+      executor.analyzeRealFiles = jest.fn().mockResolvedValue({ test: 'result' });
+      const context = {
+        files: ['file1.js', 'file2.js'],
+        type: 'api'
+      };
+      
+      const result = await executor.executeMock('test prompt', context);
+      
+      expect(executor.analyzeRealFiles).toHaveBeenCalledWith(['file1.js', 'file2.js'], 'api');
+    });
+  });
+
+  describe('createPromptContent', () => {
+    test('should call buildFullPrompt', async () => {
+      executor.buildFullPrompt = jest.fn().mockReturnValue('full prompt');
+      
+      const result = await executor.createPromptContent('base prompt', { test: true });
+      
+      expect(executor.buildFullPrompt).toHaveBeenCalledWith('base prompt', { test: true });
+      expect(result).toBe('full prompt');
+    });
+  });
+
+  describe('createShortPrompt', () => {
+    test('should create short prompt for Claude Code', () => {
+      const context = { type: 'api' };
+      const fileRefs = 'file1.js, file2.js';
+      
+      const result = executor.createShortPrompt('base', context, fileRefs);
+      
+      expect(result).toContain('Analyze the api structure');
+      expect(result).toContain('file1.js, file2.js');
+      expect(result).toContain('JSON object with endpoints array');
+    });
+  });
+
+  describe('executeCommand', () => {
+    const { spawn } = require('child_process');
+    const EventEmitter = require('events');
+    
+    beforeEach(() => {
+      jest.resetModules();
+      jest.mock('child_process');
+    });
+
+    test('should execute command and return parsed response', async () => {
+      const mockChild = new EventEmitter();
+      mockChild.stdout = new EventEmitter();
+      mockChild.stderr = new EventEmitter();
+      mockChild.kill = jest.fn();
+      
+      spawn.mockReturnValue(mockChild);
+      executor.parseResponse = jest.fn().mockReturnValue({ success: true });
+      
+      const promise = executor.executeCommand('test-command', ['arg1', 'arg2']);
+      
+      mockChild.stdout.emit('data', '{"result": "success"}');
+      mockChild.emit('close', 0);
+      
+      const result = await promise;
+      
+      expect(spawn).toHaveBeenCalledWith(
+        process.platform === 'win32' ? 'test-command.cmd' : 'test-command',
+        ['arg1', 'arg2'],
+        expect.objectContaining({
+          cwd: process.cwd(),
+          shell: process.platform === 'win32'
+        })
+      );
+      expect(result).toEqual({ success: true });
+    });
+
+    test('should handle Windows platform specifically', async () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', {
+        value: 'win32'
+      });
+
+      const mockChild = new EventEmitter();
+      mockChild.stdout = new EventEmitter();
+      mockChild.stderr = new EventEmitter();
+      mockChild.kill = jest.fn();
+      
+      spawn.mockReturnValue(mockChild);
+      executor.parseResponse = jest.fn().mockReturnValue({ success: true });
+      
+      const promise = executor.executeCommand('test-command', ['arg1']);
+      
+      mockChild.stdout.emit('data', '{"result": "success"}');
+      mockChild.emit('close', 0);
+      
+      await promise;
+      
+      expect(spawn).toHaveBeenCalledWith(
+        'test-command.cmd',
+        ['arg1'],
+        expect.objectContaining({
+          shell: true
+        })
+      );
+      
+      Object.defineProperty(process, 'platform', {
+        value: originalPlatform
+      });
+    });
+
+    test('should handle command timeout', async () => {
+      jest.useFakeTimers();
+      
+      const mockChild = new EventEmitter();
+      mockChild.stdout = new EventEmitter();
+      mockChild.stderr = new EventEmitter();
+      mockChild.kill = jest.fn();
+      
+      spawn.mockReturnValue(mockChild);
+      executor.timeout = 5000; // 5 second timeout
+      
+      const promise = executor.executeCommand('test-command', []);
+      
+      // Fast-forward time to trigger timeout
+      jest.advanceTimersByTime(5001);
+      
+      await expect(promise).rejects.toThrow('Command timed out');
+      expect(mockChild.kill).toHaveBeenCalled();
+      
+      jest.useRealTimers();
+    });
+
+    test('should handle command errors', async () => {
+      const mockChild = new EventEmitter();
+      mockChild.stdout = new EventEmitter();
+      mockChild.stderr = new EventEmitter();
+      
+      spawn.mockReturnValue(mockChild);
+      
+      const promise = executor.executeCommand('test-command', []);
+      
+      mockChild.emit('error', new Error('Command failed'));
+      
+      await expect(promise).rejects.toThrow('Command failed');
+    });
+
+    test('should handle non-zero exit codes', async () => {
+      const mockChild = new EventEmitter();
+      mockChild.stdout = new EventEmitter();
+      mockChild.stderr = new EventEmitter();
+      
+      spawn.mockReturnValue(mockChild);
+      
+      const promise = executor.executeCommand('test-command', []);
+      
+      mockChild.stderr.emit('data', 'Error output');
+      mockChild.emit('close', 1);
+      
+      await expect(promise).rejects.toThrow('Command failed with code 1: Error output');
+    });
+
+    test('should warn on stderr but succeed on code 0', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const mockChild = new EventEmitter();
+      mockChild.stdout = new EventEmitter();
+      mockChild.stderr = new EventEmitter();
+      
+      spawn.mockReturnValue(mockChild);
+      executor.parseResponse = jest.fn().mockReturnValue({ success: true });
+      
+      const promise = executor.executeCommand('test-command', []);
+      
+      mockChild.stdout.emit('data', '{"result": "success"}');
+      mockChild.stderr.emit('data', 'Warning message');
+      mockChild.emit('close', 0);
+      
+      await promise;
+      
+      expect(consoleSpy).toHaveBeenCalledWith('test-command warning:', 'Warning message');
+      
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('createAnalysisFile', () => {
+    test('should create analysis file with context', async () => {
+      const context = {
+        type: 'api',
+        files: [
+          { relativePath: 'src/file1.js', content: 'const test = 1;' },
+          { path: 'file2.js', content: 'export default test;' }
+        ]
+      };
+      
+      const result = await executor.createAnalysisFile(context);
+      
+      expect(fs.mkdir).toHaveBeenCalledWith(executor.tempDir, { recursive: true });
+      expect(fs.writeFile).toHaveBeenCalled();
+      
+      const writeCall = fs.writeFile.mock.calls[0];
+      expect(writeCall[1]).toContain('Analysis Type: api');
+      expect(writeCall[1]).toContain('Total Files: 2');
+      expect(writeCall[1]).toContain('=== FILE: src/file1.js ===');
+      expect(writeCall[1]).toContain('const test = 1;');
+    });
+
+    test('should handle files without content', async () => {
+      const context = {
+        files: [{ path: 'file1.js' }]
+      };
+      
+      await executor.createAnalysisFile(context);
+      
+      const writeCall = fs.writeFile.mock.calls[0];
+      expect(writeCall[1]).toContain('No content available');
+    });
+
+    test('should handle context without type', async () => {
+      const context = {
+        files: []
+      };
+      
+      await executor.createAnalysisFile(context);
+      
+      const writeCall = fs.writeFile.mock.calls[0];
+      expect(writeCall[1]).toContain('Analysis Type: api');
+    });
+
+    test('should handle context without files property', async () => {
+      const context = {};
+      
+      await executor.createAnalysisFile(context);
+      
+      const writeCall = fs.writeFile.mock.calls[0];
+      expect(writeCall[1]).toContain('Total Files: 0');
+    });
+
+    test('should handle files as plain strings', async () => {
+      const context = {
+        files: ['file1.js', 'file2.js']
+      };
+      
+      await executor.createAnalysisFile(context);
+      
+      const writeCall = fs.writeFile.mock.calls[0];
+      expect(writeCall[1]).toContain('=== FILE: file1.js ===');
+      expect(writeCall[1]).toContain('No content available');
+    });
+  });
+
+  describe('cleanupTempFile', () => {
+    test('should unlink file', async () => {
+      await executor.cleanupTempFile('/path/to/file.txt');
+      
+      expect(fs.unlink).toHaveBeenCalledWith('/path/to/file.txt');
+    });
+
+    test('should ignore unlink errors', async () => {
+      fs.unlink.mockRejectedValue(new Error('File not found'));
+      
+      await expect(executor.cleanupTempFile('/path/to/file.txt')).resolves.not.toThrow();
+    });
+  });
+
+  describe('analyzeRealFiles', () => {
+    beforeEach(() => {
+      fs.readFile = jest.fn();
+    });
+
+    test('should analyze API endpoints in files', async () => {
+      const files = ['api/routes.js'];
+      fs.readFile.mockResolvedValue(`
+        app.get('/api/users', handler);
+        router.post("/api/login", loginHandler);
+      `);
+      
+      const result = await executor.analyzeRealFiles(files, 'api');
+      
+      expect(result.endpoints).toHaveLength(2);
+      expect(result.endpoints[0]).toMatchObject({
+        method: 'GET',
+        path: '/api/users'
+      });
+      expect(result.endpoints[1]).toMatchObject({
+        method: 'POST',
+        path: '/api/login'
+      });
+    });
+
+    test('should analyze React components', async () => {
+      const files = ['components/Button.jsx'];
+      fs.readFile.mockResolvedValue(`
+        function Button() {}
+        const Card = () => {};
+        class Modal extends React.Component {}
+      `);
+      
+      const result = await executor.analyzeRealFiles(files, 'component');
+      
+      expect(Object.keys(result.components)).toContain('Button');
+      expect(Object.keys(result.components)).toContain('Card');
+      expect(Object.keys(result.components)).toContain('Modal');
+      expect(result.components.Modal.type).toBe('class');
+    });
+
+    test('should handle file read errors', async () => {
+      const files = ['nonexistent.js'];
+      fs.readFile.mockRejectedValue(new Error('File not found'));
+      
+      const result = await executor.analyzeRealFiles(files, 'api');
+      
+      expect(result.endpoints).toEqual([]);
+    });
+
+    test('should limit to 10 files', async () => {
+      const files = Array(20).fill('file.js');
+      fs.readFile.mockResolvedValue('content');
+      
+      await executor.analyzeRealFiles(files, 'api');
+      
+      expect(fs.readFile).toHaveBeenCalledTimes(10);
+    });
+
+    test('should add recommendations when no endpoints found', async () => {
+      const files = ['file.js'];
+      fs.readFile.mockResolvedValue('no endpoints here');
+      
+      const result = await executor.analyzeRealFiles(files, 'api');
+      
+      expect(result.recommendations).toContain('No API endpoints found. Check if your API files are in the correct location.');
+    });
+
+    test('should return default structure for unknown analysis type', async () => {
+      const result = await executor.analyzeRealFiles([], 'unknown');
+      
+      expect(result).toHaveProperty('endpoints');
+      expect(result).toHaveProperty('apiGroups');
+    });
+
+    test('should analyze TSX components', async () => {
+      const files = ['components/Button.tsx'];
+      fs.readFile.mockResolvedValue(`
+        export function Button() {}
+        const Card = () => {};
+        export class Modal extends React.Component {}
+      `);
+      
+      const result = await executor.analyzeRealFiles(files, 'component');
+      
+      expect(Object.keys(result.components)).toContain('Button');
+      expect(Object.keys(result.components)).toContain('Card');
+      expect(Object.keys(result.components)).toContain('Modal');
+    });
+
+    test('should add API recommendations when endpoints are found', async () => {
+      const files = ['api/routes.js'];
+      fs.readFile.mockResolvedValue(`
+        app.get('/api/users', handler);
+      `);
+      
+      const result = await executor.analyzeRealFiles(files, 'api');
+      
+      expect(result.recommendations).toContain('Consider adding API documentation');
+      expect(result.recommendations).toContain('Implement rate limiting for public endpoints');
+    });
+
+    test('should handle empty files array', async () => {
+      const result = await executor.analyzeRealFiles(null, 'api');
+      
+      expect(result).toBeDefined();
+      expect(result.endpoints).toEqual([]);
+    });
+
+    test('should return results for specific analysis type', async () => {
+      const result = await executor.analyzeRealFiles([], 'component');
+      
+      expect(result).toHaveProperty('components');
+      expect(result).toHaveProperty('unusedComponents');
+      expect(result).toHaveProperty('recommendations');
+    });
+  });
+
+  describe('parseResponse edge cases', () => {
+    test('should handle response starting with "Loaded cached credentials."', () => {
+      const response = 'Loaded cached credentials.\n{"result": "success"}';
+      
+      const result = executor.parseResponse(response);
+      
+      expect(result).toEqual({ result: 'success' });
+    });
+
+    test('should extract array from mixed content', () => {
+      const response = 'Some text [{"id": 1}, {"id": 2}] more text';
+      
+      const result = executor.parseResponse(response);
+      
+      expect(result).toEqual([{id: 1}, {id: 2}]);
+    });
+
+    test('should handle very long error responses', () => {
+      const longResponse = 'x'.repeat(1000);
+      
+      const result = executor.parseResponse(longResponse);
+      
+      expect(result.recommendations).toBeDefined();
+    });
+  });
 
 });
